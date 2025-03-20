@@ -20,7 +20,7 @@ func PostsCreatefunc(c *gin.Context) {
 
 	result := initializers.DB.Create(&post)
 
-	if result.Error == nil {
+	if result.Error != nil {
 		c.JSON(200, gin.H{
 			"message": "Post created succesfully!",
 			"post":    post,

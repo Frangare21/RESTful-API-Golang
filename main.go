@@ -3,6 +3,7 @@ package main
 import (
 	"restful-api/controllers"
 	"restful-api/initializers"
+	middlewares "restful-api/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,14 +13,30 @@ func init() {
 	initializers.ConnectToDb()
 }
 
-func main() {
+func initRouter() *gin.Engine {
 	router := gin.Default()
+	api := router.Group("/api")
+	{
+		api.POST("/login", controllers.GenerateToken)
+		api.POST("/register", controllers.RegisterUser)
 
-	router.POST("/posts", controllers.PostsCreatefunc)
-	router.GET("/posts", controllers.PostsIndexfunc)
-	router.GET("/posts/:id", controllers.PostsByIdfunc)
-	router.DELETE("/posts/:id", controllers.PostsDeletefunc)
-	router.PUT("/posts/:id", controllers.PostsUpdatefunc)
+		secured := api.Group("/secured").Use(middlewares.Auth())
+		{
+			// Posts Routes
+			secured.POST("/posts", controllers.PostsCreatefunc)
+			secured.GET("/posts", controllers.PostsIndexfunc)
+			secured.GET("/posts/:id", controllers.PostsByIdfunc)
+			secured.DELETE("/posts/:id", controllers.PostsDeletefunc)
+			secured.PUT("/posts/:id", controllers.PostsUpdatefunc)
+		}
+	}
 
+	return router
+}
+
+func main() {
+
+	router := initRouter()
 	router.Run()
+
 }
